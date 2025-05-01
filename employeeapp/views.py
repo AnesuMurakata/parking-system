@@ -20,7 +20,7 @@ class ClientAPIView(APIView):
                 api_key = generate_api_key()
                 secret_name, version_name = save_api_key(client_id, api_key)
 
-                return Response({"status": "success", "data": {"message": "Client registered successfully.", "client_id": client_id, "api_key": api_key}}, status=status.HTTP_200_OK)
+                return Response({"status": "success", "data": {"message": "Client registered successfully.", "client_id": client_id, "api_key": f"{api_key}uid{client_id}"}}, status=status.HTTP_200_OK)
 
         except Exception as e:
             print('debug exception ', e)

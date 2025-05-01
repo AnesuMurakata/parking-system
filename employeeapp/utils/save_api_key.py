@@ -9,10 +9,9 @@ def save_api_key(client_id, api_key):
     """
 
     # --- Validate Client ID as Secret ID ---
-    secret_id = f"client-{client_id}" 
+    secret_id = f"key_{client_id}" 
 
-    # --- Prepare Payload ---
-    # The API key is the payload, needs to be bytes
+    # The API key needs to be bytes
     payload_bytes = api_key.encode('utf-8')
 
     # --- Interact with Secret Manager ---
@@ -26,18 +25,15 @@ def save_api_key(client_id, api_key):
     secret_path = f"{parent}/secrets/{secret_id}"
 
     try:
-        # 1. Create the Secret container (if it doesn't exist)
+        # Create the Secret container (if it doesn't exist)
         print(f"Checking/Creating secret: {secret_path}")
         secret_request = {
             "parent": parent,
             "secret_id": secret_id,
             "secret": {
-                # Define replication policy, automatic is common
                 "replication": {"automatic": {}},
-                # Optional: Add labels for organization
                 "labels": {
                     "created-by": "django-command",
-                    # Add other relevant labels like environment, client-type etc.
                 }
             },
         }
@@ -46,8 +42,6 @@ def save_api_key(client_id, api_key):
             print(f"Created new secret: {secret.name}")
         except AlreadyExists:
             print(f"Secret '{secret_id}' already exists. Will add version to existing secret.")
-            # Fetch the existing secret object if needed later (e.g., to check labels)
-            secret = client.get_secret(request={"name": secret_path})
         except PermissionDenied:
              print(f"Error: Permission denied to create/get secret '{secret_id}'. Check IAM roles (Secret Manager Admin?).")
              return None, None
@@ -58,7 +52,7 @@ def save_api_key(client_id, api_key):
              print(f"An unexpected error occurred creating/getting secret '{secret_id}': {e}")
              return None, None
 
-        # 2. Add the Secret Version (the API key)
+        # Add the Secret Version (the API key)
         version_payload = {"data": payload_bytes}
         print(f"Adding secret version to: {secret.name}")
         version = client.add_secret_version(
