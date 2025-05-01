@@ -2,19 +2,25 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from employeeapp.models import Client
+from django.db import transaction
+from employeeapp.utils.generate_api_key import generate_api_key
+from employeeapp.utils.save_api_key import save_api_key
 
-# Create your views here.
 class ClientAPIView(APIView):
     def post(self, request):
         try:
-            name = request.data["name"]
-            email = request.data["email"]
+            with transaction.atomic():
+                name = request.data["name"]
 
-            client_object = Client(name=name, email=email)
+                client_object = Client(name=name)
 
-            client_object.save()
+                client_object.save()
+                client_id = client_object.id 
 
-            return Response({"status": "success", "data": "Client registered successfully."}, status=status.HTTP_200_OK)
+                api_key = generate_api_key()
+                secret_name, version_name = save_api_key(client_id, api_key)
+
+                return Response({"status": "success", "data": {"message": "Client registered successfully.", "client_id": client_id, "api_key": api_key}}, status=status.HTTP_200_OK)
 
         except Exception as e:
             print('debug exception ', e)
