@@ -10,7 +10,7 @@ class ClientAPIView(APIView):
     def post(self, request):
         try:
             with transaction.atomic():
-                name = request.data["name"]
+                name = request.data.get("name")
 
                 client_object = Client(name=name)
 
@@ -20,8 +20,10 @@ class ClientAPIView(APIView):
                 api_key = generate_api_key()
                 secret_name, version_name = save_api_key(client_id, api_key)
 
-                return Response({"status": "success", "data": {"message": "Client registered successfully.", "client_id": client_id, "api_key": f"{api_key}uid{client_id}"}}, status=status.HTTP_200_OK)
+                return Response({"data": {
+                    "message": "Client registered successfully. Store your api key securely and don't share it.", 
+                    "client_id": client_id, "api_key": f"{api_key}uid{client_id}"}}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             print('debug exception ', e)
-            return Response({"status": "error", "data": {"message": "Failed to register client.", "error": e}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"Failed to register client: {e}"}, status=status.HTTP_400_BAD_REQUEST)

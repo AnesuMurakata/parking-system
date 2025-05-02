@@ -65,3 +65,18 @@ class EmployeeAPIView(APIView):
 
         return Response({"data": f"Successfully uploaded {len(employees)} employees."}, status=status.HTTP_201_CREATED)
 
+    def delete(self, request):
+        client = request.user
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # check client as well to ensure clients can only delete their employees
+            employee = Employee.objects.get(email=email, client=client)
+        except Employee.DoesNotExist:
+            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        employee.delete()
+        return Response({"data": f"Employee with email {email} has been deleted."}, status=status.HTTP_204_NO_CONTENT)
