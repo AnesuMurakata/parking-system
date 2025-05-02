@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from employeeapp.models import Client
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import BaseAuthentication
 from employeeapp.authentication.exceptions import NoAuthToken, InvalidAuthToken
@@ -18,10 +18,10 @@ class ApiKeyAuthentication(BaseAuthentication):
             is_valid = validate_api_key_with_cache(client_id, api_key)
 
             if is_valid:
-                # Get or create the user
-                user, created = User.objects.get_or_create(username=tech_uid)
+                client = Client.objects.get(id=int(client_id))
+                client.is_authenticated = True
 
-                return (user, api_key)
+                return (client, api_key)
             else:
                 raise AuthenticationFailed("Invalid API Key")
         else:
