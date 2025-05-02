@@ -13,8 +13,9 @@ class EmployeeAPIView(APIView):
     def get(self, request):
         client = request.user
         employees = Employee.objects.filter(client=client)
-
-        return Response({"data": employees}, status=status.HTTP_200_OK)
+        serializer = EmployeeSerializer(employees, many=True)
+        
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
     def post(self, request):
         client = request.user

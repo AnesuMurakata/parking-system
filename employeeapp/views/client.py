@@ -3,11 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from employeeapp.models import Client
 from django.db import transaction
+from employeeapp.serializers.client import ClientSerializer
 from employeeapp.utils.generate_api_key import generate_api_key
 from employeeapp.utils.save_api_key import save_api_key
 
 class ClientAPIView(APIView):
     def post(self, request):
+        serializer = ClientSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             with transaction.atomic():
                 name = request.data.get("name")
