@@ -3,7 +3,7 @@ from io import TextIOWrapper
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from employeeapp.models import Client, Employee
+from employeeapp.models import Employee
 from django.core.exceptions import ValidationError 
 from employeeapp.authentication.authentication import ApiKeyAuthentication
 
@@ -11,7 +11,11 @@ class EmployeeAPIView(APIView):
     authentication_classes = [ApiKeyAuthentication]
 
     def get(self, request):
-        return Response({"status": "success", "data": []}, status=status.HTTP_200_OK)
+        client = request.user
+        employees = Employee.objects.filter(client=client)
+        serializer = EmployeeSerializer(employees, many=True)
+        
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
     def post(self, request):
         client = request.user
@@ -60,5 +64,20 @@ class EmployeeAPIView(APIView):
         except ValidationError as e:
             return Response({"detail": f"Validation error: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"detail": f"Successfully uploaded {len(employees)} employees."}, status=status.HTTP_201_CREATED)
+        return Response({"data": f"Successfully uploaded {len(employees)} employees."}, status=status.HTTP_201_CREATED)
 
+    def delete(self, request):
+        client = request.user
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # check client as well to ensure clients can only delete their employees
+            employee = Employee.objects.get(email=email, client=client)
+        except Employee.DoesNotExist:
+            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        employee.delete()
+        return Response({"data": f"Employee with email {email} has been deleted."}, status=status.HTTP_204_NO_CONTENT)
