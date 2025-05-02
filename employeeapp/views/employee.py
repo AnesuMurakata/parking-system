@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from employeeapp.models import Employee
 from django.core.exceptions import ValidationError 
+from employeeapp.serializers.employee import EmployeeSerializer
 from employeeapp.authentication.authentication import ApiKeyAuthentication
 
 class EmployeeAPIView(APIView):
@@ -37,7 +38,7 @@ class EmployeeAPIView(APIView):
             return Response({"detail": f"Error reading file: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Validate expected columns
-        expected_cols = {"email", "first_name", "last_name", "license_plate"}
+        expected_cols = {"email", "first name", "last name", "license plate"}
         if not expected_cols.issubset(df.columns.str.lower()):
             return Response(
                 {"detail": f"File must contain columns: {expected_cols}"},
@@ -52,9 +53,9 @@ class EmployeeAPIView(APIView):
         for _, row in df.iterrows():
             employee = Employee(
                 email=row["email"],
-                first_name=row["first_name"]
-                last_name=row["last_name"],
-                license_plate=row["license_plate"]
+                first_name=row["first name"],
+                last_name=row["last name"],
+                license_plate=row["license plate"],
                 client=client
             )
             employees.append(employee)
