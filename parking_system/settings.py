@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xyaip!qzugp**q^&q4l3kg!=w*4-%w_cc6r178wa0y26y8zx+z'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['vivacious-lola-vttech-08bfac11.koyeb.app']
 
@@ -79,9 +80,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'koyebdb',
-        'USER': 'koyeb-adm',
-        'PASSWORD': 'npg_BeLv2IXf4zYs',
-        'HOST': 'ep-empty-wind-a2bxg7pp.eu-central-1.pg.koyeb.app',
+        'USER': os.environ.get('KOYEB_USER'),
+        'PASSWORD': os.environ.get('KOYEB_PASSWORD'),
+        'HOST': os.environ.get('KOYEB_HOST'),
         'OPTIONS': {'sslmode': 'require'},
     }
 }
